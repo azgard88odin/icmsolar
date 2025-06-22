@@ -14,6 +14,7 @@ function remove_existing_installation() {
   else
     return
   fi
+  
 }
 
 # Retrieve identifiers and store them in files
