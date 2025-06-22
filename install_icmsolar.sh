@@ -5,12 +5,12 @@ function remove_existing_installation() {
     client_name=$(cat /home/pi/identity/client-name)
     client="${client_name// /}"
 
-    rm -r "/home/pi/identity"
-    rm "/home/pi/.ssh/$client"
-    rm "/home/pi/.ssh/$client.pub"
-    rm -r "/opt/connect-icmsolar"
+    sudo rm -r "/home/pi/identity"
+    sudo rm "/home/pi/.ssh/$client"
+    sudo rm "/home/pi/.ssh/$client.pub"
+    sudo rm -r "/opt/connect-icmsolar"
 
-    (crontab -l | sed -E 's/0\s(8|12)\s\*\s\*\s1\,4.+$//' | sed '/^$/d') | crontab -
+    sudo (crontab -l | sed -E 's/0\s(8|12)\s\*\s\*\s1\,4.+$//' | sed '/^$/d') | crontab -
   else
     return
   fi
