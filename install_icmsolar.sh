@@ -10,7 +10,7 @@ function remove_existing_installation() {
     sudo rm "/home/pi/.ssh/$client.pub"
     sudo rm -r "/opt/connect-icmsolar"
 
-    sudo (crontab -l | sed -E 's/0\s(8|12)\s\*\s\*\s1\,4.+$//' | sed '/^$/d') | crontab -
+    (crontab -l | sed -E 's/0\s(8|12)\s\*\s\*\s1\,4.+$//' | sed '/^$/d') | crontab -
   else
     return
   fi
