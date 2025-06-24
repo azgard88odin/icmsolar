@@ -40,24 +40,24 @@ function get_identifiers() {
     fi
   done
   if [ ! -d /home/pi/identity ]; then
-    mkdir /home/pi/identity
+    sudo mkdir /home/pi/identity
   fi
   if [ ! -d /home/pi/.ssh ]; then
-    mkdir /home/pi/.ssh
+    sudo mkdir /home/pi/.ssh
   fi
   echo "$client_name" >/home/pi/identity/client-name
   sudo cat /etc/machine-id >/home/pi/identity/machine-id
   sudo cat /sys/class/net/eth0/address >/home/pi/identity/mac-addresses
   sudo cat /sys/class/net/wlan0/address >>/home/pi/identity/mac-addresses
 
-  name_to_format=$(cat /home/pi/identity/client-name)
+  name_to_format=$(sudo cat /home/pi/identity/client-name)
   client="${name_to_format// /}"
 
-  machine_id=$(cat /home/pi/identity/machine-id)
-  mac_addresses=$(cat /home/pi/identity/mac-addresses)
-  echo "Client: $client_name" >/home/pi/identity/$client.id
-  echo "ID: $machine_id" >>/home/pi/identity/$client.id
-  echo -e "MAC:\n$mac_addresses" >>/home/pi/identity/$client.id
+  machine_id=$(sudo cat /home/pi/identity/machine-id)
+  mac_addresses=$(sudo cat /home/pi/identity/mac-addresses)
+  sudo echo "Client: $client_name" >/home/pi/identity/$client.id
+  sudo echo "ID: $machine_id" >>/home/pi/identity/$client.id
+  sudo echo -e "MAC:\n$mac_addresses" >>/home/pi/identity/$client.id
   # At this point we will have the following files
   # client-name, machine-id, mac-addresses, $client.id
   # These are contained within the identity directory
@@ -71,19 +71,19 @@ function create_keys() {
 
   sudo sed -i 's/^#PubkeyAuthentication yes$/PubkeyAuthentication yes/' /etc/ssh/sshd_config # enable PubkeyAuthentication
 
-  client_name=$(cat /home/pi/identity/client-name)
+  client_name=$(sudo cat /home/pi/identity/client-name)
   client="${client_name// /}"
 
   sudo systemctl restart ssh
   echo "Restarting SSH Services. Please Wait."
   sleep 5s
   # generate key pair
-  ssh-keygen -t rsa -b 4096 -N "" -f "/home/pi/.ssh/$client" <<<y >/dev/null 2>&1
+  sudo ssh-keygen -t rsa -b 4096 -N "" -f "/home/pi/.ssh/$client" <<<y >/dev/null 2>&1
   sudo chmod 600 "/home/pi/.ssh/$client*"
   # add the key on the linux system
-  ssh-add "/home/pi/.ssh/$client"
+  sudo ssh-add "/home/pi/.ssh/$client"
   # copy the key to the identity folder for packaging
-  cp "/home/pi/.ssh/$client.pub" "/home/pi/identity/$client.pub"
+  sudo cp "/home/pi/.ssh/$client.pub" "/home/pi/identity/$client.pub"
   # restart the ssh service to make sure it works
   sudo systemctl restart ssh
   echo "Restarting SSH Services. Please Wait."
@@ -97,17 +97,17 @@ function add_ssh_hostname() {
   # This function simply adds the host to the ssh_config file
   # In case the system ever restarts, the host is added and will automatically know where to send the files
 
-  client_name=$(cat /home/pi/identity/client-name)
+  client_name=$(sudo cat /home/pi/identity/client-name)
   client="${client_name// /}"
   config_file="/etc/ssh/sshd_config"
   target_host="connect-icmsolar"
   new_hostname="igoteggs.ddns.net"
 
-  cp "$config_file" "$config_file.bak"  # Create a backup of the original file
+  sudo cp "$config_file" "$config_file.bak"  # Create a backup of the original file
 
   if grep -q "Host connect-icmsolar" "$config_file"; then
     # Correct the hostname for the target host
-    awk -v host="$target_host" -v new_hostname="$new_hostname" '
+    sudo awk -v host="$target_host" -v new_hostname="$new_hostname" '
     BEGIN { in_block=0 }
     /^Host[ \t]+/ {
       if ($2 == host) {
@@ -124,11 +124,11 @@ function add_ssh_hostname() {
     { print }
     ' "$config_file.bak" > "$config_file"
   else
-    echo -e "Host connect-icmsolar" >>/etc/ssh/ssh_config                    # Alias for system
-    echo -e "\tHostname igoteggs.ddns.net" >>/etc/ssh/ssh_config             # WindowsDDNS
-    echo -e "\tUser info" >>/etc/ssh/ssh_config                              # WindowsUsername
-    echo -e "\tPort 27472" >>/etc/ssh/ssh_config                             # WindowsPort
-    echo -e "\tIdentityFile /home/pi/.ssh/$client" >>/etc/ssh/ssh_config     # KeyFile
+    sudo echo -e "Host connect-icmsolar" >>/etc/ssh/ssh_config                    # Alias for system
+    sudo echo -e "\tHostname igoteggs.ddns.net" >>/etc/ssh/ssh_config             # WindowsDDNS
+    sudo echo -e "\tUser info" >>/etc/ssh/ssh_config                              # WindowsUsername
+    sudo echo -e "\tPort 27472" >>/etc/ssh/ssh_config                             # WindowsPort
+    sudo echo -e "\tIdentityFile /home/pi/.ssh/$client" >>/etc/ssh/ssh_config     # KeyFile
   fi
 
 }
@@ -155,7 +155,7 @@ function send_files() {
   # files that need to be sent for the initial install, will serve as one of the independant scripts
   # this will be the only time that the SSH.pub key will be sent
   # the independant will send only the .id file and the ICMSolar.db file
-  client_name=$(cat /home/pi/identity/client-name)
+  client_name=$(sudo cat /home/pi/identity/client-name)
   client="${client_name// /}"
   int=$(echo $RANDOM)
   archive="$client($int).zip"
@@ -163,9 +163,9 @@ function send_files() {
   sudo apt install zip -y
 
   sudo zip -q -j "/home/pi/identity/$archive" "/home/pi/identity/$client.id" "/home/pi/identity/$client.pub" "/home/pi/ICM/ICMSolar.db"
-  scp -P 27472 "/home/pi/identity/$archive" connect-icmsolar:C:/Connect-ICMSolar/LoadingBay
+  sudo scp -P 27472 "/home/pi/identity/$archive" connect-icmsolar:C:/Connect-ICMSolar/LoadingBay
 
-  rm -f "/home/pi/identity/$archive"
+  sudo rm -f "/home/pi/identity/$archive"
   echo "Initial Files Sent."
 
 }
@@ -174,7 +174,7 @@ function send_files() {
 function install_files() {
 
   if [ ! -d /opt/connect-icmsolar ]; then
-    mkdir /opt/connect-icmsolar
+    sudo mkdir /opt/connect-icmsolar
   fi
 
   script=$(cat <<'EOF' 
@@ -183,16 +183,16 @@ function install_files() {
 function send_files () {
   # this independant script will send only the .id file and the ICMSolar.db file
   # the ssh.pub key was already sent and installed on the windows system during the initial install
-  client_name=$(cat /home/pi/identity/client-name)
+  client_name=$(sudo cat /home/pi/identity/client-name)
   client="${client_name// /}" 
   int=$(echo $RANDOM) 
   archive="$client($int).zip"
 
-  zip -q -j "/home/pi/identity/$archive" "/home/pi/identity/$client.id" "/home/pi/ICM/ICMSolar.db"
-  scp -P 27472 "/home/pi/identity/$archive" connect-icmsolar:C:/Connect-ICMSolar/LoadingBay
+  sudo zip -q -j "/home/pi/identity/$archive" "/home/pi/identity/$client.id" "/home/pi/ICM/ICMSolar.db"
+  sudo scp -P 27472 "/home/pi/identity/$archive" connect-icmsolar:C:/Connect-ICMSolar/LoadingBay
 
   sleep 100
-  rm -f /home/pi/identity/*.zip
+  sudo rm -f /home/pi/identity/*.zip
   echo "Files Sent."
 
 }
@@ -202,7 +202,7 @@ EOF
 )
 
   sudo echo "$script" > /opt/connect-icmsolar/send_files.sh
-  chmod 700 /opt/connect-icmsolar/send_files.sh
+  sudo chmod 700 /opt/connect-icmsolar/send_files.sh
 
   echo "Script Installed."
 }
