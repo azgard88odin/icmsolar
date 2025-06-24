@@ -1,7 +1,7 @@
 #!/bin/bash -e
 
 function remove_existing_installation() {
-  if [ -e "/opt/connect-icmsolar" || $(grep -q 'connect-icmsolar' /etc/ssh/ssh_config) ]; then
+  if [[ -e "/opt/connect-icmsolar" || $(grep -q 'connect-icmsolar' /etc/ssh/ssh_config) ]]; then
     client_name=$(cat /home/pi/identity/client-name)
     client="${client_name// /}"
 
