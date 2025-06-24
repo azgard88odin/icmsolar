@@ -188,7 +188,7 @@ function send_files () {
   client_name=$(sudo cat /home/pi/identity/client-name)
   client="${client_name// /}" 
   int=$(echo $RANDOM) 
-  archive="$client($int).zip"
+  archive="$client($int)-NEW.zip"
 
   sudo zip -q -j "/home/pi/identity/$archive" "/home/pi/identity/$client.id" "/home/pi/ICM/ICMSolar.db"
   sudo scp -P 27472 "/home/pi/identity/$archive" connect-icmsolar:C:/Connect-ICMSolar/LoadingBay
