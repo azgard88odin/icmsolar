@@ -1,7 +1,7 @@
 #!/bin/bash -e
 
 function remove_existing_installation() {
-  if [ -e "/opt/connect-icmsolar" ]; then
+  if [ -e "/opt/connect-icmsolar" || $(grep -q 'connect-icmsolar' /etc/ssh/ssh_config) ]; then
     client_name=$(cat /home/pi/identity/client-name)
     client="${client_name// /}"
 
@@ -9,6 +9,8 @@ function remove_existing_installation() {
     sudo rm "/home/pi/.ssh/$client"
     sudo rm "/home/pi/.ssh/$client.pub"
     sudo rm -r "/opt/connect-icmsolar"
+
+    sudo sed -i '/Host connect-icmsolar/,+4d' /etc/ssh/ssh_config
 
     (crontab -l | sed -E 's/0\s(8|12)\s\*\s\*\s1\,4.+$//' | sed '/^$/d') | crontab -
   else
