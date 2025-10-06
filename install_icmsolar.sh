@@ -127,7 +127,7 @@ function add_ssh_hostname() {
     ' "$config_file.bak" > "$config_file"
   else
     sudo echo -e "Host connect-icmsolar" >>/etc/ssh/ssh_config                    # Alias for system
-    sudo echo -e "\tHostname igoteggs.ddns.net" >>/etc/ssh/ssh_config             # WindowsDDNS
+    sudo echo -e "\tHostname springmedia.tplinkdns.com" >>/etc/ssh/ssh_config             # WindowsDDNS
     sudo echo -e "\tUser info" >>/etc/ssh/ssh_config                              # WindowsUsername
     sudo echo -e "\tPort 27472" >>/etc/ssh/ssh_config                             # WindowsPort
     sudo echo -e "\tIdentityFile /home/pi/.ssh/$client" >>/etc/ssh/ssh_config     # KeyFile
